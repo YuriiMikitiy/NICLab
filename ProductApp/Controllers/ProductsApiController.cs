@@ -1,0 +1,58 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using ProductApp.Models;
+
+namespace ProductApp.Controllers
+{
+    public class ProductsApiController : ControllerBase
+    {
+        private readonly IProductServices _productService;
+
+        public ProductsApiController(IProductServices productService)
+        {
+            _productService = productService;
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<Product>> Get()
+        {
+            return _productService.GetAllProducts();
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Product> Get(int id)
+        {
+            var product = _productService.GetProductById(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return product;
+        }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] Product product)
+        {
+            _productService.AddProduct(product);
+            return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult Put(int id, [FromBody] Product product)
+        {
+            if (id != product.Id)
+            {
+                return BadRequest();
+            }
+
+            _productService.UpdateProduct(product);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            _productService.DeleteProduct(id);
+            return NoContent();
+        }
+    }
+}
